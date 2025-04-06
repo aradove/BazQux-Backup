@@ -4,7 +4,6 @@
 A Python application to backup all your BazQux Reader items to Markdown files.
 
 Each tag will get their own markdown file, just like your read posts in BazQux. 
-and only save the links. 
 
 ## Installation
 
@@ -54,6 +53,17 @@ options:
   --tags-only          Backup all tags without starred items
 ```
 
+## Output
+The files will be stored in the following structure in the `backups` folder:
+```
+backups
+|-- automation.md
+|-- blogs.md
+|-- coding.md
+|-- DIY.md
+|-- ...
+```
+
 ### Authentication
 
 The script supports authentication with email and password.
@@ -62,3 +72,4 @@ I never got Token to work, and the API seem to state it is unsupported as of now
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
