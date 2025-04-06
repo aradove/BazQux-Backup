@@ -16,32 +16,42 @@ and only save the links.
 or just run `uv init`
 
 ## Usage
-Example to backup all tags and starred items (default behavior):
+Example to backup all **`tags`** and **`starred`** items (default behavior):
 ```bash
  uv run .\bazqux_backup.py --email "your@mail.com" --password "your_password"
 ```
 
-Example to backup specific tag:
+Example to backup **`specific tag`**:
 ```bash
 uv run .\bazqux_backup.py --email "your@mail.com" --password "your_password" --tag "TagName"
 ```
 
-Example to backup starred items:
+Example to backup **`starred items`**:
+```bash
 uv run .\bazqux_backup.py --email "your@mail.com" --password "your_password" --starred
+```
+
+Example to backup **`tagged items`**:
+```bash
+uv run .\bazqux_backup.py --email "your@mail.com" --password "your_password" --tags-only
+```
 
 Help print:
 ```bash
-usage: bazqux_backup.py [-h] [--token TOKEN] [--email EMAIL] [--password PASSWORD] [--tag TAG] [--starred]
+uv run .\bazqux_backup.py --help
+usage: bazqux_backup.py [-h] [--token TOKEN] [--email EMAIL] [--password PASSWORD] [--tag TAG]
+                        [--starred] [--tags-only]
 
 Backup BazQux Reader items to Markdown files
 
 options:
   -h, --help           show this help message and exit
-  --token TOKEN        NOT WORKING! BazQux API token (optional). 
+  --token TOKEN        NOT WORKING! BazQux API token (optional)
   --email EMAIL        BazQux account email
   --password PASSWORD  BazQux account password
   --tag TAG            Specific tag to backup (default: backup all tags)
-  --starred            Backup starred items
+  --starred            Backup starred items only
+  --tags-only          Backup all tags without starred items
 ```
 
 ### Authentication
