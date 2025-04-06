@@ -77,7 +77,16 @@ def convert_to_markdown(item):
     markdown += f"**Published:** {published.strftime('%Y-%m-%d %H:%M:%S')}  \n"
     markdown += f"**URL:** {url}  \n\n"
     markdown += "---\n\n"
-    markdown += h.handle(content)
+    
+    # Convert HTML content to markdown
+    markdown_content = h.handle(content)
+    
+    # Special handling for Hacker News posts
+    if "news.ycombinator.com" in markdown_content:
+        # Replace "# Comments: N" with "Comments: N"
+        markdown_content = markdown_content.replace("\n# Comments:", "\nComments:")
+    
+    markdown += markdown_content
     
     return markdown
 
