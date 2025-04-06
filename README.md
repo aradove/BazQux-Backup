@@ -48,3 +48,7 @@ options:
 
 The script supports authentication with email and password.
 I never got Token to work, and the API seem to state it is unsupported as of now.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
