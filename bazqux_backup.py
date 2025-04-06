@@ -143,13 +143,57 @@ def backup_tag(token, tag):
     
     print(f"Completed backup of {total_items} items for tag: {tag}")
 
+def backup_starred_items(token):
+    """Backup all starred items to a single markdown file."""
+    print("Backing up starred items...")
+    url = "https://bazqux.com/reader/api/0/stream/contents?output=json&n=1000&s=user/-/state/com.google/starred"
+    headers = {"Authorization": f"GoogleLogin auth={token}"}
+    
+    continuation = None
+    total_items = 0
+    all_starred_content = "# Starred Items\n\n"
+    
+    while True:
+        current_url = url
+        if continuation:
+            current_url += f"&c={continuation}"
+            
+        response = requests.get(current_url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        
+        items = data.get("items", [])
+        total_items += len(items)
+        
+        for item in items:
+            markdown_content = convert_to_markdown(item)
+            all_starred_content += markdown_content
+            all_starred_content += "\n\n---\n\n"  # Separator between posts
+        
+        if "continuation" in data and data["continuation"]:
+            continuation = data["continuation"]
+            print(f"  Fetched {len(items)} starred items, continuing...")
+            time.sleep(1)
+        else:
+            break
+    
+    if total_items > 0:
+        filepath = save_tag_markdown(all_starred_content, "starred")
+        print(f"Saved {total_items} starred items to {filepath}")
+    else:
+        print("No starred items found")
+            
+    print(f"Completed backup of {total_items} starred items")
+    return total_items
+
 def main():
     parser = argparse.ArgumentParser(description="Backup BazQux Reader items to Markdown files")
     parser.add_argument("--token", help="NOT WORKING! BazQux API token (optional)")
     parser.add_argument("--email", help="BazQux account email")
     parser.add_argument("--password", help="BazQux account password")
     parser.add_argument("--tag", help="Specific tag to backup (default: backup all tags)")
-    parser.add_argument("--starred", action="store_true", help="Backup starred items")
+    parser.add_argument("--starred", action="store_true", help="Backup starred items only")
+    parser.add_argument("--tags-only", action="store_true", help="Backup all tags without starred items")
     args = parser.parse_args()
     
     # Get authentication token
@@ -164,50 +208,29 @@ def main():
     
     os.makedirs("backups", exist_ok=True)
     
-    if args.starred:
-        print("Backing up starred items...")
-        url = "https://bazqux.com/reader/api/0/stream/contents?output=json&n=1000&s=user/-/state/com.google/starred"
-        headers = {"Authorization": f"GoogleLogin auth={token}"}
-        
-        continuation = None
-        total_items = 0
-        all_starred_content = "# Starred Items\n\n"
-        
-        while True:
-            current_url = url
-            if continuation:
-                current_url += f"&c={continuation}"
-                
-            response = requests.get(current_url, headers=headers)
-            response.raise_for_status()
-            data = response.json()
-            
-            items = data.get("items", [])
-            total_items += len(items)
-            
-            for item in items:
-                markdown_content = convert_to_markdown(item)
-                all_starred_content += markdown_content
-                all_starred_content += "\n\n---\n\n"  # Separator between posts
-            
-            if "continuation" in data and data["continuation"]:
-                continuation = data["continuation"]
-                print(f"  Fetched {len(items)} starred items, continuing...")
-                time.sleep(1)
-            else:
-                break
-        
-        if total_items > 0:
-            filepath = save_tag_markdown(all_starred_content, "starred")
-            print(f"Saved {total_items} starred items to {filepath}")
-        else:
-            print("No starred items found")
-                
-        print(f"Completed backup of {total_items} starred items")
-    
+    # Case 1: User specified a single tag
     if args.tag:
         backup_tag(token, args.tag)
-    elif not args.starred:
+    
+    # Case 2: User specified starred items only
+    elif args.starred:
+        backup_starred_items(token)
+    
+    # Case 3: User specified tags only (no starred items)
+    elif args.tags_only:
+        # Backup all tags
+        tags = get_tags(token)
+        print(f"Found {len(tags)} tags: {', '.join(tags)}")
+        
+        for tag in tags:
+            backup_tag(token, tag)
+    
+    # Case 4: Default - backup both starred items and all tags
+    else:
+        # Backup starred items
+        backup_starred_items(token)
+        
+        # Backup all tags
         tags = get_tags(token)
         print(f"Found {len(tags)} tags: {', '.join(tags)}")
         
