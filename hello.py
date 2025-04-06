@@ -87,16 +87,15 @@ def sanitize_filename(name):
         name = name.replace(char, '_')
     return name
 
-def save_markdown(content, tag, title, timestamp):
-    tag_dir = os.path.join("backups", sanitize_filename(tag))
-    os.makedirs(tag_dir, exist_ok=True)
+def save_tag_markdown(tag_content, tag):
+    """Save all posts from a tag to a single markdown file."""
+    os.makedirs("backups", exist_ok=True)
     
-    date_str = datetime.fromtimestamp(timestamp).strftime("%Y%m%d")
-    filename = f"{date_str}_{sanitize_filename(title)[:50]}.md"
-    filepath = os.path.join(tag_dir, filename)
+    filename = f"{sanitize_filename(tag)}.md"
+    filepath = os.path.join("backups", filename)
     
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write(content)
+        f.write(tag_content)
     
     return filepath
 
@@ -104,6 +103,7 @@ def backup_tag(token, tag):
     print(f"Backing up tag: {tag}")
     continuation = None
     total_items = 0
+    all_content = f"# Tag: {tag}\n\n"
     
     while True:
         try:
@@ -113,13 +113,8 @@ def backup_tag(token, tag):
             
             for item in items:
                 markdown_content = convert_to_markdown(item)
-                filepath = save_markdown(
-                    markdown_content, 
-                    tag, 
-                    item.get("title", "Untitled"), 
-                    item.get("published", 0)
-                )
-                print(f"  Saved: {os.path.basename(filepath)}")
+                all_content += markdown_content
+                all_content += "\n\n---\n\n"  # Separator between posts
             
             if "continuation" in data and data["continuation"]:
                 continuation = data["continuation"]
@@ -130,6 +125,12 @@ def backup_tag(token, tag):
         except Exception as e:
             print(f"Error fetching items for tag {tag}: {e}")
             break
+    
+    if total_items > 0:
+        filepath = save_tag_markdown(all_content, tag)
+        print(f"Saved {total_items} items for tag '{tag}' to {filepath}")
+    else:
+        print(f"No items found for tag '{tag}'")
     
     print(f"Completed backup of {total_items} items for tag: {tag}")
 
@@ -161,6 +162,7 @@ def main():
         
         continuation = None
         total_items = 0
+        all_starred_content = "# Starred Items\n\n"
         
         while True:
             current_url = url
@@ -176,13 +178,8 @@ def main():
             
             for item in items:
                 markdown_content = convert_to_markdown(item)
-                filepath = save_markdown(
-                    markdown_content, 
-                    "starred", 
-                    item.get("title", "Untitled"), 
-                    item.get("published", 0)
-                )
-                print(f"  Saved: {os.path.basename(filepath)}")
+                all_starred_content += markdown_content
+                all_starred_content += "\n\n---\n\n"  # Separator between posts
             
             if "continuation" in data and data["continuation"]:
                 continuation = data["continuation"]
@@ -190,6 +187,12 @@ def main():
                 time.sleep(1)
             else:
                 break
+        
+        if total_items > 0:
+            filepath = save_tag_markdown(all_starred_content, "starred")
+            print(f"Saved {total_items} starred items to {filepath}")
+        else:
+            print("No starred items found")
                 
         print(f"Completed backup of {total_items} starred items")
     
