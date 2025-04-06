@@ -145,7 +145,7 @@ def backup_tag(token, tag):
 
 def main():
     parser = argparse.ArgumentParser(description="Backup BazQux Reader items to Markdown files")
-    parser.add_argument("--token", help="BazQux API token (optional)")
+    parser.add_argument("--token", help="NOT WORKING! BazQux API token (optional)")
     parser.add_argument("--email", help="BazQux account email")
     parser.add_argument("--password", help="BazQux account password")
     parser.add_argument("--tag", help="Specific tag to backup (default: backup all tags)")
